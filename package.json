@@ -1,0 +1,18 @@
+{
+  "name": "casinoonline",
+  "version": "1.0.0",
+  "description": "ahuenno",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Casino_Online"
+  },
+  "keywords": [
+    "casic"
+  ],
+  "author": "Eduard Iateniuc",
+  "license": "ISC"
+}
