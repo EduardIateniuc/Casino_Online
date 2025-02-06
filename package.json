@@ -14,5 +14,11 @@
     "casic"
   ],
   "author": "Eduard Iateniuc",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "lucide-react": "^0.474.0"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
 }
