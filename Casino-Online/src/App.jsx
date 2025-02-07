@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent } from './components/ui/card';
-import { Button } from './components/ui/button';
-import { Alert, AlertDescription } from './components/ui/alert';
-import { Volume2, VolumeX, ChevronDown, History } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import { Alert, AlertDescription } from './ui/alert';
+import { Volume2, VolumeX, ChevronDown, History, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Table from './assets/table3.png';
+import './index.css';
 
 // Колода карт и константы
 const SUITS = ['♠', '♣', '♥', '♦'];
@@ -118,32 +120,68 @@ const PokerGame = () => {
         duration: 0.5,
         delay: index * 0.2,
         type: 'spring',
-        stiffness: 100
+        stiffness: 100,
+        damping: 10
       }
     };
   };
 
   // Компонент карты с анимацией
-  const AnimatedCard = ({ card, hidden, index, total }) => {
+  const AnimatedCard = ({ card, hidden, index, total, animate }) => {
     const isRed = card.suit === '♥' || card.suit === '♦';
     return (
       <motion.div
-        {...animateCardDeal(index, total)}
+        {...(animate ? animateCardDeal(index, total) : {})} // Анимация только если animate=true
         className={`
-          w-16 h-24 rounded-lg border-2 border-gray-300 
+          w-16 h-24 rounded-lg border-2 border-gray-200 
           flex items-center justify-center 
-          ${hidden ? 'bg-blue-500' : 'bg-white'}
+          ${hidden ? 'bg-gradient-to-br from-blue-600 to-blue-800' : 'bg-white'}
+          shadow-lg hover:shadow-xl transition-shadow duration-200
+          relative overflow-hidden
           m-1
         `}
       >
+        {/* Внутренняя тень для эффекта глубины */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-10"></div>
+  
+        {/* Угловые элементы карты */}
         {!hidden && (
-          <div className={`text-lg ${isRed ? 'text-red-500' : 'text-black'}`}>
-            {card.value}{card.suit}
+          <>
+            <div className="absolute top-1 left-1 text-sm font-bold">
+              <div className={`${isRed ? 'text-red-500' : 'text-black'}`}>
+                {card.value}
+              </div>
+              <div className={`${isRed ? 'text-red-500' : 'text-black'}`}>
+                {card.suit}
+              </div>
+            </div>
+            <div className="absolute bottom-1 right-1 text-sm font-bold transform rotate-180">
+              <div className={`${isRed ? 'text-red-500' : 'text-black'}`}>
+                {card.value}
+              </div>
+              <div className={`${isRed ? 'text-red-500' : 'text-black'}`}>
+                {card.suit}
+              </div>
+            </div>
+          </>
+        )}
+  
+        {/* Центральный элемент карты */}
+        {!hidden && (
+          <div className={`text-3xl font-bold ${isRed ? 'text-red-500' : 'text-black'}`}>
+            {card.suit}
           </div>
         )}
       </motion.div>
     );
   };
+  
+  // Пустая ячейка для карты
+  const EmptyCardSlot = () => (
+    <div className="w-16 h-24 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center m-1">
+      <div className="text-gray-400 text-lg">?</div>
+    </div>
+  );
 
   const shuffleDeck = () => {
     const newDeck = [];
@@ -355,37 +393,25 @@ const PokerGame = () => {
   const computerHandTotal = calculateHandTotal(computerHand);
   
   return (
-    <div className="min-h-screen bg-green-800 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Верхняя панель */}
-        <div className="flex justify-between mb-4">
+        <div className="flex justify-between mb-4 rounded-full px-6 py-2 bg-black bg-opacity-75 text-white">
+          <div className="w-2/5 rounded-full flex items-center gap-2">
+            Balance: {playerChips}
+          </div>
           <Button 
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2"
+            onClick={() => playerAction('call')}
+            className="bg-green-600 hover:bg-green-700 rounded-full"
           >
-            <History size={20} />
-            История
-          </Button>
-          <Button
-            onClick={() => setIsSoundEnabled(!isSoundEnabled)}
-            className="flex items-center gap-2"
-          >
-            {isSoundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-            Звук
-          </Button>
-          <Button
-            onClick={() => setIsMultiplayer(!isMultiplayer)}
-            className="flex items-center gap-2"
-          >
-            Мультиплеер
+            <Plus className='w-7 h-7'/>
           </Button>
         </div>
-
         {/* Компьютер */}
         <div className="flex justify-center mb-8">
-          <Card className="p-4 bg-opacity-90 bg-white">
+          <Card className="p-4 bg-opacity-90 bg-white shadow-lg">
             <CardContent>
-              <div className="text-center mb-2">Компьютер: {computerChips} фишек</div>
+              <div className="text-center mb-2 text-gray-800">Компьютер: {computerChips} фишек</div>
               <div className="flex justify-center">
                 <AnimatePresence>
                   {computerHand.map((card, index) => (
@@ -395,97 +421,102 @@ const PokerGame = () => {
                       hidden={gameStage !== 'showdown'}
                       index={index}
                       total={computerHand.length}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-  
-          {/* Общие карты */}
-          <div className="flex justify-center mb-8">
-            <Card className="p-4 bg-opacity-90 bg-white">
-              <CardContent>
-                <div className="text-center mb-2">Банк: {pot}</div>
-                <div className="flex justify-center">
-                  <AnimatePresence>
-                    {communityCards.map((card, index) => (
-                      <AnimatedCard
-                        key={index}
-                        card={card}
-                        index={index}
-                        total={communityCards.length}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-  
-          {/* Игрок */}
-          <div className="flex justify-center">
-            <Card className="p-4 bg-opacity-90 bg-white">
-              <CardContent>
-                <div className="text-center mb-2">Вы: {playerChips} фишек</div>
-                <div className="flex justify-center mb-4">
-                  <AnimatePresence>
-                    {playerHand.map((card, index) => (
-                      <AnimatedCard
-                        key={index}
-                        card={card}
-                        index={index}
-                        total={playerHand.length}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-                {isPlayerTurn && (
-                  <div className="flex justify-center gap-2">
-                    <Button 
-                      onClick={() => playerAction('fold')}
-                      className="bg-red-500 hover:bg-red-600"
-                    >
-                      Сбросить
-                    </Button>
-                    <Button 
-                      onClick={() => playerAction('call')}
-                      className="bg-blue-500 hover:bg-blue-600"
-                      disabled={playerChips < currentBet}
-                    >
-                      Колл ({currentBet})
-                    </Button>
-                    <Button 
-                      onClick={() => playerAction('raise')}
-                      className="bg-green-500 hover:bg-green-600"
-                      disabled={playerChips < currentBet * 2}
-                    >
-                      Рейз ({currentBet * 2})
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-  
-          {/* Индикатор текущей комбинации */}
-          {playerHand.length > 0 && (
-            <div className="mt-4 text-center">
-              <Alert>
-                <AlertDescription>
-                  Ваша комбинация: {evaluateHand([...playerHand, ...communityCards]).name}
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-  
-          {/* Модальные окна */}
-          {showHistory && <GameHistory />}
-          {isMultiplayer && <MultiplayerRoom />}
+                      animate={false} // Анимация отключена для карт компьютера
+                    />
+                  ))}
+                  {computerHand.length < 2 && Array.from({ length: 2 - computerHand.length }).map((_, i) => (
+                    <EmptyCardSlot key={`empty-${i}`} />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    );
-  };
   
-  export default PokerGame;
+        {/* Общие карты */}
+        <div className="relative flex justify-center items-center w-full h-48 rounded-lg shadow-lg mb-8">
+            <AnimatePresence>
+              {communityCards.map((card, index) => (
+                <AnimatedCard
+                  key={index}
+                  card={card}
+                  index={index}
+                  total={communityCards.length}
+                  animate={true} // Анимация включена для общих карт
+                  className="relative justify-center items-center z-10"
+                />
+              ))}
+              {communityCards.length < 5 && Array.from({ length: 5 - communityCards.length }).map((_, i) => (
+                <EmptyCardSlot key={`empty-${i}`} />
+              ))}
+            </AnimatePresence>
+          </div>
+  
+        {/* Игрок */}
+        <div className="flex justify-center">
+  <Card className="p-4 bg-opacity-90 bg-white shadow-lg">
+    <CardContent>
+      <div className="text-center mb-2 text-gray-800">Вы: {playerChips} фишек</div>
+      <div className="flex justify-center mb-4">
+        <AnimatePresence>
+          {playerHand.map((card, index) => (
+            <AnimatedCard
+              key={index}
+              card={card}
+              index={index}
+              total={playerHand.length}
+              animate={false} // Анимация отключена для карт игрока
+            />
+          ))}
+          {playerHand.length < 2 && Array.from({ length: 2 - playerHand.length }).map((_, i) => (
+            <EmptyCardSlot key={`empty-${i}`} />
+          ))}
+        </AnimatePresence>
+      </div>
+      {isPlayerTurn && (
+        <div className="flex justify-center gap-2">
+          <Button 
+            onClick={() => playerAction('fold')}
+            className="bg-red-500 hover:bg-red-600 shadow-md"
+          >
+            Сбросить
+          </Button>
+          <Button 
+            onClick={() => playerAction('call')}
+            className="bg-blue-500 hover:bg-blue-600 shadow-md"
+            disabled={playerChips < currentBet}
+          >
+            Колл ({currentBet})
+          </Button>
+          <Button 
+            onClick={() => playerAction('raise')}
+            className="bg-green-500 hover:bg-green-600 shadow-md"
+            disabled={playerChips < currentBet * 2}
+          >
+            Рейз ({currentBet * 2})
+          </Button>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</div>
+        {/* Индикатор текущей комбинации */}
+        {playerHand.length > 0 && (
+          <div className="mt-4 text-center">
+            <Alert className="bg-white bg-opacity-90 shadow-lg">
+              <AlertDescription className="text-white">
+                Ваша комбинация: {evaluateHand([...playerHand, ...communityCards]).name}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+  
+        {/* Модальные окна */}
+        {showHistory && <GameHistory />}
+        {isMultiplayer && <MultiplayerRoom />}
+      </div>
+    </div>
+  );
+};
+  
+export default PokerGame;
