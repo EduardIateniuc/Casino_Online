@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Alert, AlertDescription } from './ui/alert';
 import Footer from './ui/footerRouter';
 import { Volume2, VolumeX, ChevronDown, History, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import GameSettings from './ui/components/GameSettings';
+import PokerTable from './ui/components/PokerTable';
 import './index.css';
 
 const SUITS = ['♠', '♣', '♥', '♦'];
@@ -82,20 +81,7 @@ const PokerGame = () => {
     </div>
   );
 
-  const AnimatedCard = ({ card, hidden, index, total, animate }) => {
-    const cardColor = ['♥', '♦'].includes(card.suit) ? 'text-red-500' : 'text-black';
-    
-    return (
-      <motion.div
-        initial={animate ? { scale: 0 } : false}
-        animate={{ scale: 1 }}
-        transition={{ delay: index * 0.1 }}
-        className={`w-16 h-24 bg-white rounded-lg border border-gray-300 flex items-center justify-center m-1 ${cardColor}`}
-      >
-        {hidden ? '?' : `${card.value}${card.suit}`}
-      </motion.div>
-    );
-  };
+
 
   const evaluateHand = useCallback((cards) => {
     const allCards = [...cards];
@@ -284,95 +270,24 @@ const PokerGame = () => {
           </Button>
         </div>
         {/* Компьютер */}
-        <div className="flex justify-around mb-8">
-          {botHands.map((hand, index) => (
-            <Card key={index} className="p-4 bg-opacity-90 bg-white shadow-lg">
-              <CardContent>
-                <div className="text-center mb-2 text-gray-800">Бот {index + 1}</div>
-                <div className="flex justify-center">
-                  {hand.map((card, cardIndex) => (
-                    <AnimatedCard
-                      key={cardIndex}
-                      card={card}
-                      hidden={gameStage !== 'showdown'}
-                      index={cardIndex}
-                      total={hand.length}
-                      animate={false}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <PokerTable
+          numBots={numBots}
+          botHands={botHands}
+          gameStage={gameStage}
+          communityCards={communityCards}
+          playerHand={playerHand}
+          pot={pot}
+          isPlayerTurn={isPlayerTurn}
+          onPlayerAction={playerAction}
+          currentBet={currentBet}
+          playerChips={playerChips}
+        />
+
   
-        {/* Общие карты */}
-        <div className="relative flex justify-center items-center w-full h-48 rounded-lg shadow-lg mb-8">
-            <AnimatePresence>
-              {communityCards.map((card, index) => (
-                <AnimatedCard
-                  key={index}
-                  card={card}
-                  index={index}
-                  total={communityCards.length}
-                  animate={true} // Анимация включена для общих карт
-                  className="relative justify-center items-center z-10"
-                />
-              ))}
-              {communityCards.length < 5 && Array.from({ length: 5 - communityCards.length }).map((_, i) => (
-                <EmptyCardSlot key={`empty-${i}`} />
-              ))}
-            </AnimatePresence>
-          </div>
+      
   
         {/* Игрок */}
-        <div className="flex justify-center">
-  <Card className="p-4 bg-opacity-90 bg-white shadow-lg">
-    <CardContent>
-      <div className="text-center mb-2 text-gray-800">Вы: {playerChips} фишек</div>
-      <div className="flex justify-center mb-4">
-        <AnimatePresence>
-          {playerHand.map((card, index) => (
-            <AnimatedCard
-              key={index}
-              card={card}
-              index={index}
-              total={playerHand.length}
-              animate={false} // Анимация отключена для карт игрока
-            />
-          ))}
-          {playerHand.length < 2 && Array.from({ length: 2 - playerHand.length }).map((_, i) => (
-            <EmptyCardSlot key={`empty-${i}`} />
-          ))}
-        </AnimatePresence>
-      </div>
-      {isPlayerTurn && (
-        <div className="flex justify-center gap-2">
-          <Button 
-            onClick={() => playerAction('fold')}
-            className="bg-red-500 hover:bg-red-600 shadow-md"
-          >
-            Сбросить
-          </Button>
-          <Button 
-            onClick={() => playerAction('call')}
-            className="bg-blue-500 hover:bg-blue-600 shadow-md"
-            disabled={playerChips < currentBet}
-          >
-            Колл ({currentBet})
-          </Button>
-          <Button 
-            onClick={() => playerAction('raise')}
-            className="bg-green-500 hover:bg-green-600 shadow-md"
-            disabled={playerChips < currentBet * 2}
-          >
-            Рейз ({currentBet * 2})
-          </Button>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-</div>
+      
         {/* Индикатор текущей комбинации */}
         {playerHand.length > 0 && (
           <div className="mt-4 text-center">

@@ -3,7 +3,7 @@ import { Card, CardContent } from '../card';
 import { Button } from '../button';
 
 const GameSettings = ({ onStartGame }) => {
-  const [localNumBots, setLocalNumBots] = useState(1);
+  const [localNumBots, setLocalNumBots] = useState();
   const [localInitialBet, setLocalInitialBet] = useState(10);
 
   const handleNumBotsChange = (e) => {
@@ -29,8 +29,6 @@ const GameSettings = ({ onStartGame }) => {
             <label className="block mb-2">Количество ботов (1-4):</label>
             <input
               type="number"
-              min="1"
-              max="4"
               value={localNumBots}
               onChange={handleNumBotsChange}
               className="w-full p-2 border rounded"
