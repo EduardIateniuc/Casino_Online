@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // Fix incorrect import
+import { Link } from "react-router-dom";
 import Footer from "../footerRouter";
 import api from "../api";
 
-
 const UserProfile = () => {
   const [user, setUser] = useState(null);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     const initUser = async () => {
@@ -14,7 +14,7 @@ const UserProfile = () => {
         return;
       }
 
-      const tg = window.Telegram.WebApp.initDataUnsafe.user;
+      const tg = window.Telegram.WebApp.initDataUnsafe?.user;
       if (!tg) {
         console.error("No user data available!");
         return;
@@ -22,15 +22,17 @@ const UserProfile = () => {
 
       const playerData = {
         telegramId: tg.id,
-        username: tg.username,
-        firstName: tg.first_name,
-        lastName: tg.last_name,
-        photoUrl: tg.photo_url,
+        username: tg.username || "Неизвестный",
+        firstName: tg.first_name || "",
+        lastName: tg.last_name || "",
+        photoUrl: tg.photo_url || "",
       };
 
       try {
-        const response = await api.post("api/players/telegram-login", playerData);
+        const response = await api.post("/api/players/telegram-login", playerData);
         setUser(response.data);
+        localStorage.setItem("balance", response.data.balance || 0); // Сохранение баланса
+        setBalance(response.data.balance || 0);
       } catch (error) {
         console.error("Error during registration:", error);
       }
@@ -44,17 +46,21 @@ const UserProfile = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-4">
           {/* User Avatar */}
-          <img
-            src={playerData.photoUrl}
-            alt="User Avatar"
-            className="w-32 h-32 rounded-full border-4 border-white"
-          />
-          <p>
-            {playerData.username}
-          </p>
+          {user && (
+            <>
+              <img
+                src={user.photoUrl || "/default-avatar.png"}
+                alt="User Avatar"
+                className="w-32 h-32 rounded-full border-4 border-white"
+              />
+              <p className="text-white text-lg font-semibold">
+                {user.username}
+              </p>
+            </>
+          )}
           {/* Balance */}
           <div className="text-white text-2xl font-bold">
-            Баланс: {localStorage.getItem("balance")} фишек
+            Баланс: {balance} фишек
           </div>
           {/* Return to Game Button */}
           <Link to="/">
