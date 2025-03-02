@@ -5,6 +5,10 @@ import Footer from './ui/footerRouter';
 import { Volume2, VolumeX, ChevronDown, History, Plus } from 'lucide-react';
 import GameSettings from './ui/components/GameSettings';
 import PokerTable from './ui/components/PokerTable';
+import BetSound from './sounds/bet.mp3';
+import Deal from './sounds/deal.mp3';
+import Fold from './sounds/fold.mp3';
+import Win from './sounds/win.mp3';
 import './index.css';
 
 const SUITS = ['♠', '♣', '♥', '♦'];
@@ -118,16 +122,18 @@ const PokerGame = () => {
     if (!isSoundEnabled) return;
     
     const sounds = {
-      deal: new Audio('/sounds/card-deal.mp3'),
-      win: new Audio('/sounds/win.mp3'),
-      bet: new Audio('/sounds/chip-bet.mp3'),
-      fold: new Audio('/sounds/fold.mp3')
+      deal: new Audio(Deal),
+      win: new Audio(Win),
+      bet: new Audio(BetSound),
+      fold: new Audio(Fold)
     };
 
     if (sounds[soundType]) {
+      sounds[soundType].volume = 0.05; // Уменьшаем громкость в 2 раза
       sounds[soundType].play().catch(e => console.log('Sound play error:', e));
     }
   }, [isSoundEnabled]);
+
 
   const determineWinner = useCallback(() => {
     const playerHandStrength = evaluateHand([...playerHand, ...communityCards]);
@@ -276,28 +282,18 @@ const PokerGame = () => {
           gameStage={gameStage}
           communityCards={communityCards}
           playerHand={playerHand}
-          pot={pot}
           isPlayerTurn={isPlayerTurn}
           onPlayerAction={playerAction}
           currentBet={currentBet}
           playerChips={playerChips}
         />
-
   
       
   
         {/* Игрок */}
       
         {/* Индикатор текущей комбинации */}
-        {playerHand.length > 0 && (
-          <div className="mt-4 text-center">
-            <Alert className="bg-white bg-opacity-90 shadow-lg">
-              <AlertDescription className="text-white">
-                Ваша комбинация: {evaluateHand([...playerHand, ...communityCards]).name}
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
+       
   
         {/* Модальные окна */}
         {showHistory && <GameHistory />}
@@ -305,6 +301,7 @@ const PokerGame = () => {
       </div>
 
       <Footer/>
+    
     </div>
     
   );

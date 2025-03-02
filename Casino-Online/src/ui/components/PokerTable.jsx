@@ -1,7 +1,11 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../card.jsx';
 import AnimatedCard from './AnimatedCard';
+import { Alert, AlertDescription } from '../alert.jsx';
+
+
+
 
 const PokerTable = ({ 
   numBots, 
@@ -13,8 +17,45 @@ const PokerTable = ({
   isPlayerTurn,
   onPlayerAction,
   currentBet,
-  playerChips 
+  playerChips,
+
 }) => {
+
+  const CARD_VALUES = {
+    2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10,
+    J: 11, Q: 12, K: 13, A: 14
+  };
+  
+
+  const evaluateHand = useCallback((cards) => {
+    const allCards = [...cards];
+    const values = allCards.map(card => CARD_VALUES[card.value]);
+    const suits = allCards.map(card => card.suit);
+
+    const isFlush = suits.every(suit => suit === suits[0]);
+    const sortedValues = [...new Set(values)].sort((a, b) => a - b);
+    const isStrait = sortedValues.length >= 5 && 
+      sortedValues[sortedValues.length - 1] - sortedValues[0] === sortedValues.length - 1;
+
+    const valueCounts = values.reduce((acc, val) => {
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
+    }, {});
+
+    const pairs = Object.values(valueCounts).filter(count => count === 2).length;
+    const threes = Object.values(valueCounts).filter(count => count === 3).length;
+    const fours = Object.values(valueCounts).filter(count => count === 4).length;
+
+    if (isFlush && isStrait) return { rank: 9, name: 'Стрит-флеш' };
+    if (fours > 0) return { rank: 8, name: 'Каре' };
+    if (threes > 0 && pairs > 0) return { rank: 7, name: 'Фулл-хаус' };
+    if (isFlush) return { rank: 6, name: 'Флеш' };
+    if (isStrait) return { rank: 5, name: 'Стрит' };
+    if (threes > 0) return { rank: 4, name: 'Тройка' };
+    if (pairs === 2) return { rank: 3, name: 'Две пары' };
+    if (pairs === 1) return { rank: 2, name: 'Пара' };
+    return { rank: 1, name: 'Старшая карта' };
+  }, []);
   return (
     <div className="relative w-full min-h-[calc(100vh-120px)] flex flex-col items-center justify-between p-4">
       {/* Main Table */}
@@ -58,7 +99,7 @@ const PokerTable = ({
                     />
                   </div>
                   {/* Cards */}
-                  <div className="flex gap-1 scale-75 md:scale-100">
+                  <div className="flex gap-2 scale-75 md:scale-100">
                     {hand.map((card, cardIndex) => (
                       <AnimatedCard
                         key={cardIndex}
@@ -132,6 +173,16 @@ const PokerTable = ({
               </div>
             </CardContent>
           </Card>
+
+          {playerHand.length > 0 && (
+          <div className=" text-center">
+            <Alert className="bg-white bg-opacity-90 shadow-lg">
+              <AlertDescription className="text-white">
+                Ваша комбинация: {evaluateHand([...playerHand, ...communityCards]).name}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
         </div>
       </div>
     </div>

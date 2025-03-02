@@ -3,19 +3,19 @@ import { Card, CardContent } from '../card';
 import { Button } from '../button';
 
 const GameSettings = ({ onStartGame }) => {
-  const [localNumBots, setLocalNumBots] = useState();
-  const [localInitialBet, setLocalInitialBet] = useState(10);
+  const [localNumBots, setLocalNumBots] = useState("");
+  const [localInitialBet, setLocalInitialBet] = useState("");
 
   const handleNumBotsChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value >= 1 && value <= 4) {
+    const value = e.target.value;
+    if (value === "" || (!isNaN(value) && Number(value) >= 1 && Number(value) <= 4)) {
       setLocalNumBots(value);
     }
   };
 
   const handleInitialBetChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value >= 1) {
+    const value = e.target.value;
+    if (value === "" || (!isNaN(value) && Number(value) >= 1)) {
       setLocalInitialBet(value);
     }
   };
@@ -28,7 +28,7 @@ const GameSettings = ({ onStartGame }) => {
           <div className="mb-4">
             <label className="block mb-2">Количество ботов (1-4):</label>
             <input
-              type="number"
+              type="text"
               value={localNumBots}
               onChange={handleNumBotsChange}
               className="w-full p-2 border rounded"
@@ -37,16 +37,16 @@ const GameSettings = ({ onStartGame }) => {
           <div className="mb-4">
             <label className="block mb-2">Начальная ставка:</label>
             <input
-              type="number"
-              min="1"
+              type="text"
               value={localInitialBet}
               onChange={handleInitialBetChange}
               className="w-full p-2 border rounded"
             />
           </div>
           <Button
-            onClick={() => onStartGame(localNumBots, localInitialBet)}
+            onClick={() => onStartGame(Number(localNumBots) || 1, Number(localInitialBet) || 1)}
             className="w-full bg-green-500 hover:bg-green-600"
+            disabled={localNumBots === "" || localInitialBet === ""}
           >
             Начать игру
           </Button>
