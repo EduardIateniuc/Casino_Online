@@ -26,6 +26,7 @@ const UserProfile = () => {
         firstName: tg.first_name || "",
         lastName: tg.last_name || "",
         photoUrl: tg.photo_url || "",
+        balance: tg.balance || ""
       };
 
       try {
@@ -60,7 +61,7 @@ const UserProfile = () => {
           )}
           {/* Balance */}
           <div className="text-white text-2xl font-bold">
-            Баланс: {balance} фишек
+            Баланс: {user.balance} фишек
           </div>
           {/* Return to Game Button */}
           <Link to="/">
