@@ -9,11 +9,19 @@ const UserProfile = () => {
 
   useEffect(() => {
     const initUser = async () => {
+
       if (!window.Telegram || !window.Telegram.WebApp) {
         console.error("Telegram WebApp API is not available!");
         return;
       }
-
+    
+      window.Telegram.WebApp.ready(); // Говорим Telegram, что WebApp загрузился
+      window.Telegram.WebApp.expand(); // Разворачиваем WebApp на весь экран
+    
+      console.log("Telegram initData:", window.Telegram.WebApp.initData);
+      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
+    
+  
       const tg = window.Telegram.WebApp.initDataUnsafe?.user;
       if (!tg) {
         console.error("No user data available!");
@@ -26,7 +34,6 @@ const UserProfile = () => {
         firstName: tg.first_name || "",
         lastName: tg.last_name || "",
         photoUrl: tg.photo_url || "",
-        balance: tg.balance || ""
       };
 
       try {
@@ -61,7 +68,7 @@ const UserProfile = () => {
           )}
           {/* Balance */}
           <div className="text-white text-2xl font-bold">
-            Баланс: {user.balance} фишек
+            Баланс: 0 фишек
           </div>
           {/* Return to Game Button */}
           <Link to="/">
