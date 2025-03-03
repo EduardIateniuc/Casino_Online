@@ -11,8 +11,8 @@ export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />}/>
-        <Route path='/profile' element={<Profile/>}/>
+        <Route path="/" element={<Profile />}/>
+        <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />
       </Routes>
     </BrowserRouter>
