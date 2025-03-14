@@ -8,30 +8,74 @@ const UserProfile = () => {
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const userId = localStorage.getItem("userId"); // Assuming you store the user ID after login
+    const initUser = async () => {
+      if (!window.Telegram || !window.Telegram.WebApp) {
+        console.error("Telegram WebApp API is not available!");
+        return;
+      }
 
-      if (!userId) {
-        console.error("No user ID found!");
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+
+      console.log("Telegram initData:", window.Telegram.WebApp.initData);
+      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
+
+      const tg = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (!tg) {
+        console.error("No user data available!");
         return;
       }
 
       try {
-        const response = await api.get(`/api/players/${userId}`);
+        // 1️⃣ Проверяем, есть ли пользователь в базе
+        const response = await api.get(`/api/players/${tg.id}`);
         setUser(response.data);
         setBalance(response.data.balance || 0);
+
+        localStorage.setItem("userId", response.data.telegramId);
+        localStorage.setItem("balance", response.data.balance || 0);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        if (error.response && error.response.status === 404) {
+          console.log("Пользователь не найден, регистрируем...");
+
+          const playerData = {
+            telegramId: tg.id,
+            username: tg.username || "Неизвестный",
+            firstName: tg.first_name || "",
+            lastName: tg.last_name || "",
+            photoUrl: tg.photo_url || "",
+          };
+
+          try {
+            // 2️⃣ Если пользователя нет, регистрируем его
+            const registerResponse = await api.post("/api/players/telegram-login", playerData, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            setUser(registerResponse.data);
+            setBalance(registerResponse.data.balance || 0);
+
+            localStorage.setItem("userId", registerResponse.data.telegramId);
+            localStorage.setItem("balance", registerResponse.data.balance || 0);
+          } catch (registerError) {
+            console.error("Ошибка при регистрации:", registerError);
+          }
+        } else {
+          console.error("Ошибка при получении данных пользователя:", error);
+        }
       }
     };
 
-    fetchUserData();
+    initUser();
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-4">
+          {/* User Avatar */}
           {user && (
             <>
               <img
@@ -44,9 +88,11 @@ const UserProfile = () => {
               </p>
             </>
           )}
+          {/* Balance */}
           <div className="text-white text-2xl font-bold">
             Баланс: {balance} фишек
           </div>
+          {/* Return to Game Button */}
           <Link to="/">
             <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full">
               Вернуться в игру
