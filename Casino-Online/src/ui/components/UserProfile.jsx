@@ -8,52 +8,30 @@ const UserProfile = () => {
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    const initUser = async () => {
+    const fetchUserData = async () => {
+      const userId = localStorage.getItem("userId"); // Assuming you store the user ID after login
 
-      if (!window.Telegram || !window.Telegram.WebApp) {
-        console.error("Telegram WebApp API is not available!");
+      if (!userId) {
+        console.error("No user ID found!");
         return;
       }
-    
-      window.Telegram.WebApp.ready(); // Говорим Telegram, что WebApp загрузился
-      window.Telegram.WebApp.expand(); // Разворачиваем WebApp на весь экран
-    
-      console.log("Telegram initData:", window.Telegram.WebApp.initData);
-      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
-    
-  
-      const tg = window.Telegram.WebApp.initDataUnsafe?.user;
-      if (!tg) {
-        console.error("No user data available!");
-        return;
-      }
-
-      const playerData = {
-        telegramId: tg.id,
-        username: tg.username || "Неизвестный",
-        firstName: tg.first_name || "",
-        lastName: tg.last_name || "",
-        photoUrl: tg.photo_url || "",
-      };
 
       try {
-        const response = await api.post("/api/players/telegram-login", playerData);
+        const response = await api.get(`/api/players/${userId}`);
         setUser(response.data);
-        localStorage.setItem("balance", response.data.balance || 0); // Сохранение баланса
         setBalance(response.data.balance || 0);
       } catch (error) {
-        console.error("Error during registration:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    initUser();
+    fetchUserData();
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-4">
-          {/* User Avatar */}
           {user && (
             <>
               <img
@@ -66,14 +44,18 @@ const UserProfile = () => {
               </p>
             </>
           )}
-          {/* Balance */}
           <div className="text-white text-2xl font-bold">
-            Баланс: 0 фишек
+            Баланс: {balance} фишек
           </div>
-          {/* Return to Game Button */}
           <Link to="/">
             <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full">
               Вернуться в игру
+            </button>
+          </Link>
+
+          <Link to="/balance-income">
+            <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full">
+              Пополнить баланс
             </button>
           </Link>
         </div>
