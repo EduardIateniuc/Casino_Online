@@ -46,12 +46,20 @@ const PokerGame = () => {
 
   const updateBalance = async (playerId, newBalance) => {
     try {
-      await api.put(`api/players/${playerId}/balance`, { balance: newBalance });
-      console.log("Balance updated:", newBalance);
+      const response = await api.patch(`api/players/${playerId}/balance`, null, {
+        params: { amount: newBalance },
+      });
+      console.log("Balance updated:", response.data);
+  
+      const updatedBalance = await getBalance(playerId);
+      console.log("Updated balance after request:", updatedBalance);
     } catch (error) {
       console.error("Error updating balance:", error);
     }
   };
+  
+  
+  
   
   
 
@@ -171,34 +179,43 @@ const PokerGame = () => {
   }, [isSoundEnabled]);
 
 
-  const determineWinner = useCallback(() => {
+  const determineWinner = useCallback(async () => {
+    if (!tg || !tg.id) return;
+  
     const playerHandStrength = evaluateHand([...playerHand, ...communityCards]);
-    const computerHandStrength = botHands.map(hand => evaluateHand([...hand, ...communityCards]));
-
+    const computerHandStrength = botHands.map((hand) =>
+      evaluateHand([...hand, ...communityCards])
+    );
+  
     let winner, winningHand;
-    if (playerHandStrength.rank > Math.max(...computerHandStrength.map(h => h.rank))) {
-      winner = 'Игрок';
+  
+    if (playerHandStrength.rank > Math.max(...computerHandStrength.map((h) => h.rank))) {
+      winner = "Игрок";
       winningHand = playerHandStrength.name;
       const newBalance = playerChips + pot;
-      setPlayerChips(newBalance);
-      updateBalance(tg.id, newBalance);
+      await updateBalance(tg.id, newBalance);
+      const updatedBalance = await getBalance(tg.id);
+      setPlayerChips(updatedBalance);
     } else {
-      winner = 'Компьютер';
+      winner = "Компьютер";
       winningHand = computerHandStrength[0].name;
-      setComputerChips(prev => prev + pot);
+      setComputerChips((prev) => prev + pot);
     }
-
-    playSound('win');
-    setGameHistory(prev => [{
-      winner,
-      pot,
-      winningHand,
-      date: new Date().toLocaleString()
-    }, ...prev]);
-    
+  
+    playSound("win");
+    setGameHistory((prev) => [
+      {
+        winner,
+        pot,
+        winningHand,
+        date: new Date().toLocaleString(),
+      },
+      ...prev,
+    ]);
+  
     setTimeout(dealCards, 2000);
-  }, [playerHand, botHands, communityCards, pot, dealCards, evaluateHand, playSound]);
-
+  }, [playerHand, botHands, communityCards, pot, dealCards, evaluateHand, playSound, playerChips]);
+  
   const progressGame = useCallback(() => {
     switch (gameStage) {
       case 'preFlop':
@@ -242,43 +259,48 @@ const PokerGame = () => {
     }
   }, [isPlayerTurn, botHands, communityCards, evaluateHand]);
 
-  const playerAction = useCallback((action, isPlayer = true) => {
-    playSound('bet');
+  const playerAction = useCallback(async (action, isPlayer = true) => {
+    playSound("bet");
+  
+    if (!tg || !tg.id) return; // Проверяем, есть ли ID игрока
     let newBalance;
   
     switch (action) {
-      case 'call':
+      case "call":
         if (isPlayer) {
           newBalance = playerChips - currentBet;
-          setPlayerChips(newBalance);
-          updateBalance(tg.id, newBalance); // Обновляем баланс в базе
+          await updateBalance(tg.id, newBalance);
+          const updatedBalance = await getBalance(tg.id);
+          setPlayerChips(updatedBalance);
         } else {
-          setComputerChips(prev => prev - currentBet);
+          setComputerChips((prev) => prev - currentBet);
         }
-        setPot(prev => prev + currentBet);
+        setPot((prev) => prev + currentBet);
         break;
-        
-      case 'raise':
+  
+      case "raise":
         const raiseAmount = currentBet * 2;
         if (isPlayer) {
           newBalance = playerChips - raiseAmount;
-          setPlayerChips(newBalance);
-          updateBalance(tg.id, newBalance);
+          await updateBalance(tg.id, newBalance);
+          const updatedBalance = await getBalance(tg.id);
+          setPlayerChips(updatedBalance);
         } else {
-          setComputerChips(prev => prev - raiseAmount);
+          setComputerChips((prev) => prev - raiseAmount);
         }
-        setPot(prev => prev + raiseAmount);
+        setPot((prev) => prev + raiseAmount);
         setCurrentBet(raiseAmount);
         break;
   
-      case 'fold':
-        playSound('fold');
+      case "fold":
+        playSound("fold");
         if (isPlayer) {
-          setComputerChips(prev => prev + pot);
+          setComputerChips((prev) => prev + pot);
         } else {
           newBalance = playerChips + pot;
-          setPlayerChips(newBalance);
-          updateBalance(tg.id, newBalance);
+          await updateBalance(tg.id, newBalance);
+          const updatedBalance = await getBalance(tg.id);
+          setPlayerChips(updatedBalance);
         }
         dealCards();
         return;
@@ -288,7 +310,7 @@ const PokerGame = () => {
     if (!isPlayer) {
       progressGame();
     }
-  }, [currentBet, pot, dealCards, progressGame, playSound]);
+  }, [currentBet, pot, dealCards, progressGame, playSound, playerChips]);
   
 
   // Effects
