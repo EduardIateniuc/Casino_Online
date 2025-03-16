@@ -57,7 +57,7 @@ const PokerGame = () => {
 
     const getBalance = async (playerId) => {
       try {
-        const response = await api.get(`api/players/${tg.id}/balance`)
+        const response = await api.get(`api/players/${playerId}/balance`)
         setPlayerChips(response.data);
         console.log("Player Balance:", response.data);
       } catch (error) {
@@ -66,8 +66,14 @@ const PokerGame = () => {
     };
 
     useEffect(() => {
-      getBalance(tg.id);
+      const tg = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (tg && tg.id) {
+        getBalance(tg.id);
+      } else {
+        console.error("Telegram user data is undefined!");
+      }
     }, []);
+    
     
 
 
