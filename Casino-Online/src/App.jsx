@@ -25,7 +25,7 @@ const PokerGame = () => {
   const [botHands, setBotHands] = useState([]); // Added missing state
   const [communityCards, setCommunityCards] = useState([]);
   const [pot, setPot] = useState(0);
-  const [playerChips, setPlayerChips] = useState(0);
+  const [playerChips, setPlayerChips] = useState();
   const [computerChips, setComputerChips] = useState(1000);
   const [currentBet, setCurrentBet] = useState(0);
   const [gameStage, setGameStage] = useState('preFlop');
