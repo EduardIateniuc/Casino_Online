@@ -10,6 +10,7 @@ import Deal from './sounds/deal.mp3';
 import Fold from './sounds/fold.mp3';
 import Win from './sounds/win.mp3';
 import './index.css';
+import api from './ui/api';
 
 const SUITS = ['♠', '♣', '♥', '♦'];
 const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -25,7 +26,7 @@ const PokerGame = () => {
   const [botHands, setBotHands] = useState([]); // Added missing state
   const [communityCards, setCommunityCards] = useState([]);
   const [pot, setPot] = useState(0);
-  const [playerChips, setPlayerChips] = useState(1000);
+  const [playerChips, setPlayerChips] = useState(0);
   const [computerChips, setComputerChips] = useState(1000);
   const [currentBet, setCurrentBet] = useState(0);
   const [gameStage, setGameStage] = useState('preFlop');
@@ -39,10 +40,40 @@ const PokerGame = () => {
   const [initialBet, setInitialBet] = useState(10);
   const [showSettings, setShowSettings] = useState(true);
 
+  const tg = window.Telegram.WebApp.initDataUnsafe?.user;
 
-  localStorage.setItem("balance", playerChips);
 
-  // Helper functions
+
+
+  const updateBalance = async (playerId, newBalance) => {
+    try {
+      await api.put(`api/players/${playerId}/balance`, { balance: newBalance });
+      console.log("Balance updated:", newBalance);
+    } catch (error) {
+      console.error("Error updating balance:", error);
+    }
+  };
+  
+  
+
+    const getBalance = async (playerId) => {
+      try {
+        const response = await api.get(`api/players/${tg.id}/balance`)
+        setPlayerChips(response.data);
+        console.log("Player Balance:", response.data);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+
+    useEffect(() => {
+      getBalance(tg.id);
+    }, []);
+    
+
+
+
+
   const shuffleDeck = useCallback(() => {
     const newDeck = [];
     SUITS.forEach(suit => {
@@ -143,7 +174,9 @@ const PokerGame = () => {
     if (playerHandStrength.rank > Math.max(...computerHandStrength.map(h => h.rank))) {
       winner = 'Игрок';
       winningHand = playerHandStrength.name;
-      setPlayerChips(prev => prev + pot);
+      const newBalance = playerChips + pot;
+      setPlayerChips(newBalance);
+      updateBalance(tg.id, newBalance);
     } else {
       winner = 'Компьютер';
       winningHand = computerHandStrength[0].name;
@@ -206,42 +239,52 @@ const PokerGame = () => {
 
   const playerAction = useCallback((action, isPlayer = true) => {
     playSound('bet');
-    
+    let newBalance;
+  
     switch (action) {
       case 'call':
         if (isPlayer) {
-          setPlayerChips(prev => prev - currentBet);
+          newBalance = playerChips - currentBet;
+          setPlayerChips(newBalance);
+          updateBalance(tg.id, newBalance); // Обновляем баланс в базе
         } else {
           setComputerChips(prev => prev - currentBet);
         }
         setPot(prev => prev + currentBet);
         break;
+        
       case 'raise':
         const raiseAmount = currentBet * 2;
         if (isPlayer) {
-          setPlayerChips(prev => prev - raiseAmount);
+          newBalance = playerChips - raiseAmount;
+          setPlayerChips(newBalance);
+          updateBalance(tg.id, newBalance);
         } else {
           setComputerChips(prev => prev - raiseAmount);
         }
         setPot(prev => prev + raiseAmount);
         setCurrentBet(raiseAmount);
         break;
+  
       case 'fold':
         playSound('fold');
         if (isPlayer) {
           setComputerChips(prev => prev + pot);
         } else {
-          setPlayerChips(prev => prev + pot);
+          newBalance = playerChips + pot;
+          setPlayerChips(newBalance);
+          updateBalance(tg.id, newBalance);
         }
         dealCards();
         return;
     }
-    
+  
     setIsPlayerTurn(!isPlayer);
     if (!isPlayer) {
       progressGame();
     }
   }, [currentBet, pot, dealCards, progressGame, playSound]);
+  
 
   // Effects
   useEffect(() => {
@@ -275,7 +318,6 @@ const PokerGame = () => {
             <Plus className='w-7 h-7'/>
           </Button>
         </div>
-        {/* Компьютер */}
         <PokerTable
           numBots={numBots}
           botHands={botHands}
@@ -290,12 +332,6 @@ const PokerGame = () => {
   
       
   
-        {/* Игрок */}
-      
-        {/* Индикатор текущей комбинации */}
-       
-  
-        {/* Модальные окна */}
         {showHistory && <GameHistory />}
         {isMultiplayer && <MultiplayerRoom />}
       </div>

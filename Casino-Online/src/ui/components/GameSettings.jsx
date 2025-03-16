@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '../card';
 import { Button } from '../button';
+import footer from '../footerRouter';
 
 const GameSettings = ({ onStartGame }) => {
   const [localNumBots, setLocalNumBots] = useState("");
@@ -52,6 +53,7 @@ const GameSettings = ({ onStartGame }) => {
           </Button>
         </CardContent>
       </Card>
+      <Footer/>
     </div>
   );
 };

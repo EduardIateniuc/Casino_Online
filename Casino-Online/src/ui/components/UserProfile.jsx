@@ -86,6 +86,9 @@ const UserProfile = () => {
               <p className="text-white text-lg font-semibold">
                 {user.username}
               </p>
+              <p className="text-white text-lg font-semibold">
+                {user.firstName}
+              </p>
             </>
           )}
           {/* Balance */}
