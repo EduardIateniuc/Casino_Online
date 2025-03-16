@@ -20,7 +20,6 @@ const CARD_VALUES = {
 };
 
 const PokerGame = () => {
-  // All state declarations grouped together
   const [deck, setDeck] = useState([]);
   const [playerHand, setPlayerHand] = useState([]);
   const [botHands, setBotHands] = useState([]); // Added missing state
