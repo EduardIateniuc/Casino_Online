@@ -336,7 +336,7 @@ const PokerGame = () => {
         {/* Верхняя панель */}
         <div className="flex justify-between mb-4 rounded-full px-6 py-2 bg-black bg-opacity-75 text-white">
           <div className="w-2/5 rounded-full flex items-center gap-2">
-            Balance: {playerChips}
+            Balance: {getBalance(tg.id)}
           </div>
           <Button 
             onClick={() => playerAction('call')}
