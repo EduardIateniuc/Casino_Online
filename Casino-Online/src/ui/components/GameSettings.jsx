@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '../card';
 import { Button } from '../button';
 import Footer from '../footerRouter';
@@ -20,6 +20,15 @@ const GameSettings = ({ onStartGame }) => {
       setLocalInitialBet(value);
     }
   };
+
+  const handleStartGame = useCallback(() => {
+    const numBots = Number(localNumBots) || 1;
+    const initialBet = Number(localInitialBet) || 1;
+
+    if (onStartGame) {
+      onStartGame(numBots, initialBet);
+    }
+  }, [localNumBots, localInitialBet, onStartGame]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
@@ -45,7 +54,7 @@ const GameSettings = ({ onStartGame }) => {
             />
           </div>
           <Button
-            onClick={() => onStartGame(Number(localNumBots) || 1, Number(localInitialBet) || 1)}
+            onClick={handleStartGame}
             className="w-full bg-green-500 hover:bg-green-600"
             disabled={localNumBots === "" || localInitialBet === ""}
           >
@@ -53,7 +62,7 @@ const GameSettings = ({ onStartGame }) => {
           </Button>
         </CardContent>
       </Card>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
