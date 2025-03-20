@@ -7,6 +7,7 @@ import BetSound from "./sounds/bet.mp3";
 import Deal from "./sounds/deal.mp3";
 import Fold from "./sounds/fold.mp3";
 import Win from "./sounds/win.mp3";
+import Footer from "./ui/footerRouter";
 import "./index.css";
 import api from "./ui/api";
 
@@ -320,6 +321,7 @@ const PokerGame = () => {
           playerChips={playerChips}
         />
       </div>
+      <Footer/>
     </div>
   );
 };
