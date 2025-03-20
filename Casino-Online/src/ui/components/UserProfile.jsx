@@ -52,7 +52,6 @@ const UserProfile = () => {
           };
 
           try {
-            // Если пользователя нет, регистрируем его
             const registerResponse = await api.post("/api/players/telegram-login", playerData, {
               headers: {
                 "Content-Type": "application/json",
