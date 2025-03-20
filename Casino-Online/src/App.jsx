@@ -56,6 +56,21 @@ const PokerGame = () => {
     }
   };
 
+  const createGame = async (status, pot) => {
+    const newGame = {
+      status: status,
+      pot: pot,
+    };
+
+    try{
+      const gameData = await api.post("/api/games", newGame);
+      localStorage.setItem("Game Data:", gameData);
+    }catch(error){
+      console.error("Error fetching balance:", error);
+      return 0; 
+    }
+  }
+
   const getBalance = async (playerId) => {
     try {
       const response = await api.get(`/api/players/${playerId}/balance`);
@@ -169,12 +184,16 @@ const PokerGame = () => {
       const newBalance = playerChips + pot;
       if (tg?.id) {
         await updateBalance(tg.id, newBalance);
+        await createGame("win", pot);
       }
       setPlayerChips(newBalance);
     } else {
       winner = "Computer";
       winningHand = botHandStrengths[0].name;
       setComputerChips(prev => prev + pot);
+      if(tg?.id){
+        createGame("lose", pot);
+      }
     }
 
     playSound("win");
