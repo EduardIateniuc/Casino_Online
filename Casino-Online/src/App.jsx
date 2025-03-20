@@ -12,10 +12,35 @@ import "./index.css";
 import api from "./ui/api";
 
 const SUITS = ["♠", "♣", "♥", "♦"];
-const VALUES = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+const VALUES = [
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "J",
+  "Q",
+  "K",
+  "A",
+];
 const CARD_VALUES = {
-  2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10,
-  J: 11, Q: 12, K: 13, A: 14,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+  7: 7,
+  8: 8,
+  9: 9,
+  10: 10,
+  J: 11,
+  Q: 12,
+  K: 13,
+  A: 14,
 };
 
 const PokerGame = () => {
@@ -45,7 +70,7 @@ const PokerGame = () => {
         `/api/players/${playerId}/balance?newBalance=${amount}`,
         { amount },
         {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { "Content-Type": "application/json" },
         }
       );
       setPlayerChips(response.data.balance);
@@ -57,19 +82,25 @@ const PokerGame = () => {
   };
 
   const createGame = async (status, pot) => {
-    const newGame = {
-      status: status,
-      pot: pot,
-    };
+    try {
+      const newGame = {
+        telegramId: tg.id,
+        status: status,
+        pot: pot,
+      };
 
-    try{
-      const gameData = await api.post("/api/games", newGame);
-      localStorage.setItem("Game Data:", gameData);
-    }catch(error){
-      console.error("Error fetching balance:", error);
-      return 0; 
+      const response = await api.post("/api/games", newGame);
+      console.log("Game created:", response.data);
+      localStorage.setItem("Game Data", JSON.stringify(response.data));
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error creating game:",
+        error.response?.data || error.message
+      );
+      return null;
     }
-  }
+  };
 
   const getBalance = async (playerId) => {
     try {
@@ -78,15 +109,15 @@ const PokerGame = () => {
       return response.data.balance;
     } catch (error) {
       console.error("Error fetching balance:", error);
-      return 0; 
+      return 0;
     }
   };
 
   const shuffleDeck = useCallback(() => {
-    const newDeck = SUITS.flatMap(suit => 
-      VALUES.map(value => ({ suit, value }))
+    const newDeck = SUITS.flatMap((suit) =>
+      VALUES.map((value) => ({ suit, value }))
     );
-    
+
     for (let i = newDeck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -112,15 +143,18 @@ const PokerGame = () => {
     setIsPlayerTurn(true);
   }, [numBots, initialBet, shuffleDeck]);
 
-  const startGame = useCallback(async (numBots, initialBet) => {
-    setNumBots(numBots);
-    setInitialBet(initialBet);
-    if (tg?.id) {
-      const balance = await getBalance(tg.id);
-      setPlayerChips(balance);
-    }
-    setShowSettings(false);
-  }, [tg]);
+  const startGame = useCallback(
+    async (numBots, initialBet) => {
+      setNumBots(numBots);
+      setInitialBet(initialBet);
+      if (tg?.id) {
+        const balance = await getBalance(tg.id);
+        setPlayerChips(balance);
+      }
+      setShowSettings(false);
+    },
+    [tg]
+  );
 
   const evaluateHand = useCallback((cards) => {
     const allCards = [...cards];
@@ -129,17 +163,25 @@ const PokerGame = () => {
 
     const isFlush = suits.every((suit) => suit === suits[0]);
     const sortedValues = [...new Set(values)].sort((a, b) => a - b);
-    const isStraight = sortedValues.length >= 5 && 
-      sortedValues[sortedValues.length - 1] - sortedValues[0] === sortedValues.length - 1;
+    const isStraight =
+      sortedValues.length >= 5 &&
+      sortedValues[sortedValues.length - 1] - sortedValues[0] ===
+        sortedValues.length - 1;
 
     const valueCounts = values.reduce((acc, val) => {
       acc[val] = (acc[val] || 0) + 1;
       return acc;
     }, {});
 
-    const pairs = Object.values(valueCounts).filter(count => count === 2).length;
-    const threes = Object.values(valueCounts).filter(count => count === 3).length;
-    const fours = Object.values(valueCounts).filter(count => count === 4).length;
+    const pairs = Object.values(valueCounts).filter(
+      (count) => count === 2
+    ).length;
+    const threes = Object.values(valueCounts).filter(
+      (count) => count === 3
+    ).length;
+    const fours = Object.values(valueCounts).filter(
+      (count) => count === 4
+    ).length;
 
     if (isFlush && isStraight) return { rank: 9, name: "Straight Flush" };
     if (fours > 0) return { rank: 8, name: "Four of a Kind" };
@@ -152,30 +194,33 @@ const PokerGame = () => {
     return { rank: 1, name: "High Card" };
   }, []);
 
-  const playSound = useCallback((soundType) => {
-    if (!isSoundEnabled) return;
-    const sounds = {
-      deal: Deal,
-      win: Win,
-      bet: BetSound,
-      fold: Fold,
-    };
-    if (sounds[soundType]) {
-      const audio = new Audio(sounds[soundType]);
-      audio.volume = 0.5;
-      audio.play().catch(e => console.log("Sound play error:", e));
-    }
-  }, [isSoundEnabled]);
+  const playSound = useCallback(
+    (soundType) => {
+      if (!isSoundEnabled) return;
+      const sounds = {
+        deal: Deal,
+        win: Win,
+        bet: BetSound,
+        fold: Fold,
+      };
+      if (sounds[soundType]) {
+        const audio = new Audio(sounds[soundType]);
+        audio.volume = 0.5;
+        audio.play().catch((e) => console.log("Sound play error:", e));
+      }
+    },
+    [isSoundEnabled]
+  );
 
   const determineWinner = useCallback(async () => {
     if (!tg?.id) return;
 
     const playerHandStrength = evaluateHand([...playerHand, ...communityCards]);
-    const botHandStrengths = botHands.map(hand => 
+    const botHandStrengths = botHands.map((hand) =>
       evaluateHand([...hand, ...communityCards])
     );
 
-    const maxBotRank = Math.max(...botHandStrengths.map(h => h.rank));
+    const maxBotRank = Math.max(...botHandStrengths.map((h) => h.rank));
     let winner, winningHand;
 
     if (playerHandStrength.rank > maxBotRank) {
@@ -184,28 +229,41 @@ const PokerGame = () => {
       const newBalance = playerChips + pot;
       if (tg?.id) {
         await updateBalance(tg.id, newBalance);
-        await createGame("win", pot);
+        await createGame("WIN", pot);
       }
       setPlayerChips(newBalance);
     } else {
       winner = "Computer";
       winningHand = botHandStrengths[0].name;
-      setComputerChips(prev => prev + pot);
-      if(tg?.id){
-        createGame("lose", pot);
+      setComputerChips((prev) => prev + pot);
+      if (tg?.id) {
+        await createGame("LOSE", pot);
       }
     }
 
     playSound("win");
-    setGameHistory(prev => [{
-      winner,
-      pot,
-      winningHand,
-      date: new Date().toLocaleString(),
-    }, ...prev]);
+    setGameHistory((prev) => [
+      {
+        winner,
+        pot,
+        winningHand,
+        date: new Date().toLocaleString(),
+      },
+      ...prev,
+    ]);
 
     setTimeout(dealCards, 2000);
-  }, [playerHand, botHands, communityCards, pot, dealCards, evaluateHand, playSound, playerChips, tg]);
+  }, [
+    playerHand,
+    botHands,
+    communityCards,
+    pot,
+    dealCards,
+    evaluateHand,
+    playSound,
+    playerChips,
+    tg,
+  ]);
 
   const progressGame = useCallback(() => {
     setDealAnimation(true);
@@ -249,56 +307,68 @@ const PokerGame = () => {
     }
   }, [isPlayerTurn, botHands, communityCards, evaluateHand]);
 
-  const playerAction = useCallback(async (action, isPlayer = true) => {
-    if (!tg?.id && isPlayer) return;
+  const playerAction = useCallback(
+    async (action, isPlayer = true) => {
+      if (!tg?.id && isPlayer) return;
 
-    playSound("bet");
-    let newPlayerChips = playerChips;
-    let newComputerChips = computerChips;
+      playSound("bet");
+      let newPlayerChips = playerChips;
+      let newComputerChips = computerChips;
 
-    switch (action) {
-      case "call":
-        if (isPlayer) {
-          newPlayerChips -= currentBet;
-          await updateBalance(tg.id, newPlayerChips);
-          setPlayerChips(newPlayerChips);
-        } else {
-          newComputerChips -= currentBet;
-          setComputerChips(newComputerChips);
-        }
-        setPot(prev => prev + currentBet);
-        break;
+      switch (action) {
+        case "call":
+          if (isPlayer) {
+            newPlayerChips -= currentBet;
+            await updateBalance(tg.id, newPlayerChips);
+            setPlayerChips(newPlayerChips);
+          } else {
+            newComputerChips -= currentBet;
+            setComputerChips(newComputerChips);
+          }
+          setPot((prev) => prev + currentBet);
+          break;
 
-      case "raise":
-        const raiseAmount = currentBet * 2;
-        if (isPlayer) {
-          newPlayerChips -= raiseAmount;
-          await updateBalance(tg.id, newPlayerChips);
-          setPlayerChips(newPlayerChips);
-        } else {
-          newComputerChips -= raiseAmount;
-          setComputerChips(newComputerChips);
-        }
-        setPot(prev => prev + raiseAmount);
-        setCurrentBet(raiseAmount);
-        break;
+        case "raise":
+          const raiseAmount = currentBet * 2;
+          if (isPlayer) {
+            newPlayerChips -= raiseAmount;
+            await updateBalance(tg.id, newPlayerChips);
+            setPlayerChips(newPlayerChips);
+          } else {
+            newComputerChips -= raiseAmount;
+            setComputerChips(newComputerChips);
+          }
+          setPot((prev) => prev + raiseAmount);
+          setCurrentBet(raiseAmount);
+          break;
 
-      case "fold":
-        playSound("fold");
-        if (isPlayer) {
-          setComputerChips(prev => prev + pot);
-        } else {
-          newPlayerChips += pot;
-          await updateBalance(tg.id, newPlayerChips);
-          setPlayerChips(newPlayerChips);
-        }
-        dealCards();
-        return;
-    }
+        case "fold":
+          playSound("fold");
+          if (isPlayer) {
+            setComputerChips((prev) => prev + pot);
+          } else {
+            newPlayerChips += pot;
+            await updateBalance(tg.id, newPlayerChips);
+            setPlayerChips(newPlayerChips);
+          }
+          dealCards();
+          return;
+      }
 
-    setIsPlayerTurn(!isPlayer);
-    if (!isPlayer) progressGame();
-  }, [currentBet, pot, playerChips, computerChips, dealCards, progressGame, playSound, tg]);
+      setIsPlayerTurn(!isPlayer);
+      if (!isPlayer) progressGame();
+    },
+    [
+      currentBet,
+      pot,
+      playerChips,
+      computerChips,
+      dealCards,
+      progressGame,
+      playSound,
+      tg,
+    ]
+  );
 
   useEffect(() => {
     if (!showSettings && deck.length === 0) {
@@ -340,7 +410,7 @@ const PokerGame = () => {
           playerChips={playerChips}
         />
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
