@@ -63,7 +63,7 @@ const PokerGame = () => {
       return response.data.balance;
     } catch (error) {
       console.error("Error fetching balance:", error);
-      return 1000; // Default value in case of error
+      return 0; 
     }
   };
 
