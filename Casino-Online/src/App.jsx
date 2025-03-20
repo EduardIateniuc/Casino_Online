@@ -42,7 +42,7 @@ const PokerGame = () => {
   const updateBalance = async (playerId, amount) => {
     try {
       const response = await api.patch(
-        `/api/players/${playerId}/balance`,
+        `/api/players/${playerId}/balance?newBalance=${amount}`,
         { amount },
         {
           headers: { 'Content-Type': 'application/json' }
