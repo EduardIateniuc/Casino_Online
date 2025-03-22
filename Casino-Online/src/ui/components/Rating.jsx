@@ -7,13 +7,14 @@ const Rating = () => {
   const [players, setPlayers] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
 
   useEffect(() => {
     const fetchPlayers = async () => {
       setLoading(true);
       setError(null);
 
-      const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
       if (!tg || !tg.id) {
         setError("Telegram user data not available");
@@ -23,7 +24,6 @@ const Rating = () => {
 
       try {
         const response = await api.get(`/api/players/getPlayersRating`);
-        // Ограничиваем список до 10 игроков
         setPlayers((response.data || []).slice(0, 10));
       } catch (err) {
         setError("Ошибка при загрузке рейтинга: " + err.message);
@@ -36,7 +36,6 @@ const Rating = () => {
     fetchPlayers();
   }, []);
 
-  // Функция для определения стилей строки в зависимости от позиции
   const getRowStyles = (position) => {
     switch (position) {
       case 1:
@@ -50,7 +49,6 @@ const Rating = () => {
     }
   };
 
-  // Функция для определения стилей номера позиции
   const getPositionBadgeStyles = (position) => {
     switch (position) {
       case 1:
@@ -110,7 +108,8 @@ const Rating = () => {
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex-col items-center">
+                          {player.telegramId === tg.id ? (
+                              <div className="flex-col items-center">
                               <img 
                                 src={player.photoUrl} 
                                 alt={player.username} 
@@ -122,6 +121,22 @@ const Rating = () => {
                                 
                               </div>
                             </div>
+                            ) : (
+                                <div className="flex-col items-center">
+                                <img 
+                                  src={player.photoUrl} 
+                                  alt={player.username} 
+                                  className="w-10 h-10 rounded-full mr-3 border-4 border-gray-800"
+                                  onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
+                                />
+                                <div>
+                                  <span className="font-lg">{player.firstName || player.username}</span>
+                                  
+                                </div>
+                              </div>
+
+                              )}
+                        
                           </td>
                           <td className="py-4 px-4">
                             <span className="font-bold text-lg">
@@ -133,9 +148,8 @@ const Rating = () => {
                                 <span className="text-amber-500">{player.balance}</span>
                               ) : (
                                 player.balance
-                              )}
+                              )} $
                             </span>
-                            <span className="text-green-400 ml-1">фишек</span>
                           </td>
                         </tr>
                       ))}
