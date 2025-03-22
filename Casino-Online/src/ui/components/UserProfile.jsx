@@ -23,7 +23,6 @@ const UserProfile = () => {
       }
 
       if (telegramUser) {
-        // Загружаем пользователя по Telegram ID
         try {
           const response = await api.get(`/api/players/${telegramUser.id}`);
           setUser(response.data);

@@ -55,7 +55,6 @@ const PokerGame = () => {
   const [gameStage, setGameStage] = useState("preFlop");
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [gameHistory, setGameHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [dealAnimation, setDealAnimation] = useState(false);
   const [numBots, setNumBots] = useState(1);
@@ -81,12 +80,13 @@ const PokerGame = () => {
     }
   };
 
-  const createGame = async (status, pot) => {
+  const createGame = async (status, pot, combination) => {
     try {
       const newGame = {
         telegramId: tg.id,
         status: status,
         pot: pot,
+        comb: combination,
       };
 
       const response = await api.post("/api/games", newGame);
@@ -223,13 +223,15 @@ const PokerGame = () => {
     const maxBotRank = Math.max(...botHandStrengths.map((h) => h.rank));
     let winner, winningHand;
 
+    console.log(playerHandStrength.name)
+
     if (playerHandStrength.rank > maxBotRank) {
       winner = "Player";
       winningHand = playerHandStrength.name;
       const newBalance = playerChips + pot;
       if (tg?.id) {
         await updateBalance(tg.id, newBalance);
-        await createGame("WIN", pot);
+        await createGame("WIN", pot, playerHandStrength.name);
       }
       setPlayerChips(newBalance);
     } else {
@@ -237,7 +239,7 @@ const PokerGame = () => {
       winningHand = botHandStrengths[0].name;
       setComputerChips((prev) => prev + pot);
       if (tg?.id) {
-        await createGame("LOSE", pot);
+        await createGame("LOSE", pot, playerHandStrength.name);
       }
     }
 

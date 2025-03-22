@@ -3,7 +3,18 @@ import React from 'react';
 import { Card, CardContent } from '../card.jsx';
 import { Button } from '../button';
 
+const fetchGames = () => {
+
+  
+  try{
+
+  }catch {
+    
+  }
+}
+
 const GameHistory = () => (
+
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <Card className="w-96 p-4 max-h-[80vh] overflow-auto">
         <CardContent>

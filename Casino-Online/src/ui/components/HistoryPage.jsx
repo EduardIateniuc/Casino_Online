@@ -1,7 +1,43 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api';
+
 
 const HistoryPage = ({ gameHistory }) => {
+
+  const [playerId, setPlayerId] = useState();
+  const [games, setGames] = useState();
+
+
+const fetchGames = async (pot, status, date) =>{
+
+  const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  const GameInfo = {
+    potDate : pot,
+    statusDate : status,
+    dateDate : date,
+  };
+
+  
+
+  try {
+    const response = await api.get(`/api/players/${tg.id}`);
+    setPlayerId(response.data.playerId);
+    setUser(response.data);
+    setBalance(response.data.balance || 0);
+  } catch (error) {
+    setError("Ошибка загрузки пользователя");
+  }
+
+  try{
+    const gameResponse = await api.get(`/api/games/${playerId}`);
+    setGames(gameResponse.data);
+  }catch(error){
+    setError("Ошибка загрузки игр");
+  }
+
+}
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
@@ -23,9 +59,8 @@ const HistoryPage = ({ gameHistory }) => {
                   {gameHistory.map((entry, index) => (
                     <tr key={index} className="border-b border-gray-200">
                       <td className="py-2">{entry.date}</td>
-                      <td className="py-2">{entry.winner}</td>
+                      <td className="py-2">{entry.status}</td>
                       <td className="py-2">{entry.pot} фишек</td>
-                      <td className="py-2">{entry.winningHand}</td>
                     </tr>
                   ))}
                 </tbody>
