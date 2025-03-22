@@ -16,7 +16,6 @@ const UserProfile = () => {
       let telegramUser = null;
 
       if (window.Telegram?.WebApp) {
-        // Приложение работает в Telegram
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         telegramUser = window.Telegram.WebApp.initDataUnsafe?.user;
