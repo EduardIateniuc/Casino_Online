@@ -16,6 +16,7 @@ const UserProfile = () => {
       let telegramUser = null;
 
       if (window.Telegram?.WebApp) {
+        // Приложение работает в Telegram
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         telegramUser = window.Telegram.WebApp.initDataUnsafe?.user;
@@ -131,7 +132,7 @@ const UserProfile = () => {
                 <Wallet className="w-6 h-6 text-green-500 mr-3" />
                 <div>
                   <p className="text-gray-400 text-xs">Текущий баланс</p>
-                  <p className="text-white text-xl font-bold">{balance} фишек</p>
+                  <p className="text-white text-xl font-bold">{balance},25 $</p>
                 </div>
               </div>
               <Link to="/balance-income">

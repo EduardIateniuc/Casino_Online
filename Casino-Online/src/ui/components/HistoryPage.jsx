@@ -35,7 +35,6 @@ const HistoryPage = () => {
     fetchGames();
   }, []);
 
-  // Helper function to determine status badge color
   const getStatusColor = (status) => {
     switch(status.toLowerCase()) {
       case "win":
@@ -54,8 +53,8 @@ const HistoryPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-6">
           <div className="text-center mb-2">
-            <h1 className="text-white text-4xl font-bold">
-              История выигрышей
+            <h1 className="text-white text-2xl font-bold">
+              История игр
             </h1>
             <div className="h-1 w-32 bg-green-500 mx-auto mt-2 rounded-full"></div>
           </div>
@@ -78,7 +77,6 @@ const HistoryPage = () => {
                         <th className="text-left py-3 px-4">Дата</th>
                         <th className="text-left py-3 px-4">Статус</th>
                         <th className="text-left py-3 px-4">Ставка</th>
-                        <th className="text-left py-3 px-4">Комбинация</th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-100">
@@ -96,7 +94,6 @@ const HistoryPage = () => {
                             <span className="font-medium">{game.pot}</span> 
                             <span className="text-green-400 ml-1">фишек</span>
                           </td>
-                          <td className="py-3 px-4 font-mono">{game.combination}</td>
                         </tr>
                       ))}
                     </tbody>
