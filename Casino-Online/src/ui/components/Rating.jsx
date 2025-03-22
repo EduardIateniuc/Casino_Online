@@ -106,7 +106,7 @@ const Rating = () => {
                           </td>
                           <td className="py-4 px-4">
                             {player.telegramId === tg.id ? (
-                              <div className="flex-col items-center">
+                              <div className="flex-col items-center text-center">
                                 <img
                                   src={player.photoUrl}
                                   alt={player.username}
@@ -134,7 +134,7 @@ const Rating = () => {
                                   }
                                 />
                                 <div>
-                                  <span className="font-medium">
+                                  <span className="font-medium text-">
                                     {player.firstName || player.username}
                                   </span>
                                 </div>
@@ -142,7 +142,7 @@ const Rating = () => {
                             )}
                           </td>
                           <td className="py-4 px-4">
-                            <span className="font-bold text-lg">
+                            <span className="font-extrabold text-2xl">
                               {index === 0 ? (
                                 <span className="text-yellow-400">
                                   {player.balance}
