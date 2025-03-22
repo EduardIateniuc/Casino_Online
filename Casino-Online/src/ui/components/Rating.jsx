@@ -9,12 +9,10 @@ const Rating = () => {
   const [loading, setLoading] = useState(true);
   const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-
   useEffect(() => {
     const fetchPlayers = async () => {
       setLoading(true);
       setError(null);
-
 
       if (!tg || !tg.id) {
         setError("Telegram user data not available");
@@ -62,18 +60,15 @@ const Rating = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-6">
           <div className="text-center mb-2">
-            <h1 className="text-white text-3xl font-bold">
-              Рейтинг игроков
-            </h1>
+            <h1 className="text-white text-3xl font-bold">Рейтинг игроков</h1>
             <div className="h-1 w-32 bg-green-500 mx-auto mt-2 rounded-full"></div>
           </div>
-          
+
           <div className="w-full bg-gray-800 bg-opacity-80 rounded-xl shadow-2xl overflow-hidden border border-green-600">
             <div className="p-6">
               {loading ? (
@@ -96,59 +91,74 @@ const Rating = () => {
                     </thead>
                     <tbody className="text-gray-100">
                       {players.map((player, index) => (
-                        <tr 
-                          key={player.playerId} 
+                        <tr
+                          key={player.playerId}
                           className={getRowStyles(index + 1)}
                         >
                           <td className="py-4 px-4">
                             <div className="flex justify-center">
-                              <div className={getPositionBadgeStyles(index + 1)}>
+                              <div
+                                className={getPositionBadgeStyles(index + 1)}
+                              >
                                 {index + 1}
                               </div>
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                          {player.telegramId === tg.id ? (
+                            {player.telegramId === tg.id ? (
                               <div className="flex-col items-center">
-                              <img 
-                                src={player.photoUrl} 
-                                alt={player.username} 
-                                className="w-10 h-10 rounded-full mr-3 border-2 border-gray-600"
-                                onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
-                              />
-                              <div>
-                                <span className="font-medium">{player.firstName || player.username}</span>
-                                
-                              </div>
-                            </div>
-                            ) : (
-                                <div className="flex-col items-center">
-                                <img 
-                                  src={player.photoUrl} 
-                                  alt={player.username} 
-                                  className="w-10 h-10 rounded-full mr-3 border-4 border-gray-800"
-                                  onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
+                                <img
+                                  src={player.photoUrl}
+                                  alt={player.username}
+                                  className="w-12 h-12 rounded-full mr-3 border-2 border-gray-400"
+                                  onError={(e) =>
+                                    (e.target.src =
+                                      "https://via.placeholder.com/40")
+                                  }
                                 />
                                 <div>
-                                  <span className="font-lg">{player.firstName || player.username}</span>
-                                  
+                                  <span className="font-medium">
+                                    You
+                                  </span>
                                 </div>
                               </div>
-
-                              )}
-                        
+                            ) : (
+                              <div className="flex-col items-center">
+                                <img
+                                  src={player.photoUrl}
+                                  alt={player.username}
+                                  className="w-10 h-10 rounded-full mr-3 border-2 border-gray-600"
+                                  onError={(e) =>
+                                    (e.target.src =
+                                      "https://via.placeholder.com/40")
+                                  }
+                                />
+                                <div>
+                                  <span className="font-medium">
+                                    {player.firstName || player.username}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </td>
                           <td className="py-4 px-4">
                             <span className="font-bold text-lg">
                               {index === 0 ? (
-                                <span className="text-yellow-400">{player.balance}</span>
+                                <span className="text-yellow-400">
+                                  {player.balance}
+                                </span>
                               ) : index === 1 ? (
-                                <span className="text-gray-300">{player.balance}</span>
+                                <span className="text-gray-300">
+                                  {player.balance}
+                                </span>
                               ) : index === 2 ? (
-                                <span className="text-amber-500">{player.balance}</span>
+                                <span className="text-amber-500">
+                                  {player.balance}
+                                </span>
                               ) : (
                                 player.balance
-                              )} $
+                              )}{" "}
+                              $
                             </span>
                           </td>
                         </tr>
@@ -164,11 +174,20 @@ const Rating = () => {
               )}
             </div>
           </div>
-          
+
           <Link to="/">
             <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               Вернуться в игру
             </button>
