@@ -23,7 +23,8 @@ const Rating = () => {
 
       try {
         const response = await api.get(`/api/players/getPlayersRating`);
-        setPlayers(response.data || []);
+        // Ограничиваем список до 10 игроков
+        setPlayers((response.data || []).slice(0, 10));
       } catch (err) {
         setError("Ошибка при загрузке рейтинга: " + err.message);
         setPlayers([]);
@@ -35,12 +36,54 @@ const Rating = () => {
     fetchPlayers();
   }, []);
 
+  // Функция для определения стилей строки в зависимости от позиции
+  const getRowStyles = (position) => {
+    switch (position) {
+      case 1:
+        return "border-b border-yellow-500 bg-yellow-900 bg-opacity-30 hover:bg-yellow-900 hover:bg-opacity-50 transition-colors";
+      case 2:
+        return "border-b border-gray-400 bg-gray-700 bg-opacity-50 hover:bg-gray-700 hover:bg-opacity-70 transition-colors";
+      case 3:
+        return "border-b border-amber-700 bg-amber-900 bg-opacity-30 hover:bg-amber-900 hover:bg-opacity-50 transition-colors";
+      default:
+        return "border-b border-gray-700 hover:bg-gray-700 transition-colors";
+    }
+  };
+
+  // Функция для определения стилей номера позиции
+  const getPositionBadgeStyles = (position) => {
+    switch (position) {
+      case 1:
+        return "flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500 text-yellow-900 font-bold";
+      case 2:
+        return "flex items-center justify-center w-8 h-8 rounded-full bg-gray-400 text-gray-900 font-bold";
+      case 3:
+        return "flex items-center justify-center w-8 h-8 rounded-full bg-amber-700 text-amber-100 font-bold";
+      default:
+        return "flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-gray-200";
+    }
+  };
+
+  // Функции для медальных эмодзи
+  const getPositionEmoji = (position) => {
+    switch (position) {
+      case 1:
+        return "🥇";
+      case 2:
+        return "🥈";
+      case 3:
+        return "🥉";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center space-y-6">
           <div className="text-center mb-2">
-            <h1 className="text-white text-2xl font-bold">
+            <h1 className="text-white text-3xl font-bold">
               Рейтинг игроков
             </h1>
             <div className="h-1 w-32 bg-green-500 mx-auto mt-2 rounded-full"></div>
@@ -61,28 +104,54 @@ const Rating = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-green-700 text-green-300">
-                        <th className="text-left py-3 px-4">#</th>
+                        <th className="text-center py-3 px-4">Позиция</th>
                         <th className="text-left py-3 px-4">Игрок</th>
                         <th className="text-left py-3 px-4">Баланс</th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-100">
                       {players.map((player, index) => (
-                        <tr key={player.playerId} className="border-b border-gray-700 hover:bg-gray-700 transition-colors">
-                          <td className="py-3 px-4">{index + 1}</td>
-                          <td className="py-3 px-4">
+                        <tr 
+                          key={player.playerId} 
+                          className={getRowStyles(index + 1)}
+                        >
+                          <td className="py-4 px-4">
+                            <div className="flex justify-center">
+                              <div className={getPositionBadgeStyles(index + 1)}>
+                                {index + 1}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
                             <div className="flex items-center">
                               <img 
                                 src={player.photoUrl} 
                                 alt={player.username} 
-                                className="w-8 h-8 rounded-full mr-2"
-                                onError={(e) => e.target.src = "https://via.placeholder.com/32"} // Fallback image
+                                className="w-10 h-10 rounded-full mr-3 border-2 border-gray-600"
+                                onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
                               />
-                              <span>{player.firstName || player.username}</span>
+                              <div>
+                                <span className="font-medium">{player.firstName || player.username}</span>
+                                {index < 3 && (
+                                  <span className="ml-2 text-lg" title={`${index + 1} место`}>
+                                    {getPositionEmoji(index + 1)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="font-medium">{player.balance}</span>
+                          <td className="py-4 px-4">
+                            <span className="font-bold text-lg">
+                              {index === 0 ? (
+                                <span className="text-yellow-400">{player.balance}</span>
+                              ) : index === 1 ? (
+                                <span className="text-gray-300">{player.balance}</span>
+                              ) : index === 2 ? (
+                                <span className="text-amber-500">{player.balance}</span>
+                              ) : (
+                                player.balance
+                              )}
+                            </span>
                             <span className="text-green-400 ml-1">фишек</span>
                           </td>
                         </tr>
