@@ -132,7 +132,7 @@ const UserProfile = () => {
                 <Wallet className="w-6 h-6 text-green-500 mr-3" />
                 <div>
                   <p className="text-gray-400 text-xs">Текущий баланс</p>
-                  <p className="text-white text-xl font-bold">{balance},25 $</p>
+                  <p className="text-white text-xl font-bold">{balance}</p>
                 </div>
               </div>
               <Link to="/balance-income">
