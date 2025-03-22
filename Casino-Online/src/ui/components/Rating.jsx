@@ -64,19 +64,6 @@ const Rating = () => {
     }
   };
 
-  // Функции для медальных эмодзи
-  const getPositionEmoji = (position) => {
-    switch (position) {
-      case 1:
-        return "🥇";
-      case 2:
-        return "🥈";
-      case 3:
-        return "🥉";
-      default:
-        return "";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
@@ -123,7 +110,7 @@ const Rating = () => {
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex items-center">
+                            <div className="flex-col items-center">
                               <img 
                                 src={player.photoUrl} 
                                 alt={player.username} 
@@ -132,11 +119,7 @@ const Rating = () => {
                               />
                               <div>
                                 <span className="font-medium">{player.firstName || player.username}</span>
-                                {index < 3 && (
-                                  <span className="ml-2 text-lg" title={`${index + 1} место`}>
-                                    {getPositionEmoji(index + 1)}
-                                  </span>
-                                )}
+                                
                               </div>
                             </div>
                           </td>
