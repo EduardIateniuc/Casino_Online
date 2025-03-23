@@ -35,7 +35,7 @@ const MainPage = () => {
 
      
 
-        const userResponse = await api.get(`/api/players/${689123242}`);
+        const userResponse = await api.get(`/api/players/${tg.id}`);
         setUser(userResponse.data);
         setBalance(userResponse.data.balance || 0);
 
@@ -46,11 +46,7 @@ const MainPage = () => {
         }
         setTransactions(transactionsResponse.data || []);
 
-        const statsResponse = {
-            wins: 10,
-            totalGames: 25,
-            winRate: 200,
-        };
+        const statsResponse = await api.get(`/api/games/getGamesRating/${tg.id}`);
         setStats(statsResponse.data || { wins: 0, totalGames: 0, winRate: 0 });
       
     };

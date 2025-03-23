@@ -118,7 +118,7 @@ const Rating = () => {
                                 />
                                 <div>
                                   <span className="font-medium">
-                                  {player.firstName || player.username}
+                                    You
                                   </span>
                                 </div>
                               </div>
