@@ -84,7 +84,7 @@ const HistoryPage = () => {
                       {games.map((game, index) => (
                         <tr key={index} className="border-b border-gray-700 hover:bg-gray-700 transition-colors">
                           <td className="py-3 px-4">
-                          {format(new Date(game.createdAt), 'dd.MM.yyyy HH:mm:ss')}
+                          {game.createdAt}
                           </td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(game.status)}`}>
