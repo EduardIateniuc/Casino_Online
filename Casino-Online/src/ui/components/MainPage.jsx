@@ -31,7 +31,6 @@ const UserProfile = () => {
           localStorage.setItem("balance", response.data.balance || 0);
         } catch (error) {
           if (error.response?.status === 404) {
-            // Если пользователь не найден — регистрируем его
             const newUser = {
               telegramId: telegramUser.id,
               username: telegramUser.username || "Неизвестный",

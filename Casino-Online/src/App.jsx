@@ -66,7 +66,7 @@ const PokerGame = () => {
   const updateBalance = async (playerId, amount) => {
     try {
       const response = await api.patch(
-        `/api/players/${playerId}/balance?newBalance=${amount}`,
+        `/api/players/${playerId}/balance`,
         { amount },
         {
           headers: { "Content-Type": "application/json" },
@@ -78,8 +78,7 @@ const PokerGame = () => {
       console.error("Error updating balance:", error);
       return null;
     }
-  };
-
+};
   const createGame = async (status, pot, combination) => {
     try {
       const newGame = {
