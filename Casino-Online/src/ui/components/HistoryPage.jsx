@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../footerRouter";
 import api from "../api";
-import { format } from 'date-fns';
 
 const HistoryPage = () => {
   const [games, setGames] = useState([]);
@@ -84,7 +83,7 @@ const HistoryPage = () => {
                       {games.map((game, index) => (
                         <tr key={index} className="border-b border-gray-700 hover:bg-gray-700 transition-colors">
                           <td className="py-3 px-4">
-                          {game.createdAt}
+                            {new Date(game.createdAt).toLocaleString()}
                           </td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(game.status)}`}>
