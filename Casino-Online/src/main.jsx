@@ -9,13 +9,14 @@ import Incomes from "./ui/components/BalanceIncomes.jsx";
 import Rating from './ui/components/Rating.jsx';
 import MainPage from './ui/components/MainPage.jsx';
 import PokerWebSocket from './ui/components/PokerWebSocket.jsx';
+import PokerGame from './ui/components/test/PokerGame.jsx';
 
 export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={< MainPage/>}/>
-        <Route path='/test' element={ <PokerWebSocket/>}/>
+        <Route path='/test' element={ <PokerGame/>}/>
         <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />
         <Route path='/balance-income' element={< Incomes/>}/>
