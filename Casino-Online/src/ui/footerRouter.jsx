@@ -20,7 +20,7 @@ const Footer = () => {
   return (
     <div className="w-full left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-lg bottom-0 fixed py-3 shadow-lg border-t border-gray-800">
       <div className="max-w-lg mx-auto flex justify-between items-center px-6">
-        <Link to="/game">
+        <Link to="/test">
           <div className={getItemClass("/game")}>
             <Gamepad className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">Игра</span>
