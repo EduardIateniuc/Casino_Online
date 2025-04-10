@@ -30,67 +30,84 @@ const PokerGame = () => {
 
   const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-  useEffect(() => {
-    const connectWebSocket = () => {
-      const socket = new SockJS('/ws');
-      const client = new Client({
-        webSocketFactory: () => socket,
-        debug: (str) => {
-          console.log(str);
-        },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-      });
+  // In PokerGame.js
+useEffect(() => {
+  const connectWebSocket = () => {
+    const socket = new SockJS('/ws');
+    const client = new Client({
+      webSocketFactory: () => socket,
+      debug: (str) => console.log(str),
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
-      client.onConnect = () => {
-        setConnected(true);
-        console.log("Connected to WebSocket");
-        
-        if (gameState?.gameId) {
-          client.subscribe(`/topic/games/${gameState.gameId}`, (message) => {
-            handleGameUpdate(JSON.parse(message.body));
-          });
-        }
-        
-        client.subscribe('/topic/games', (message) => {
-          const gamesList = JSON.parse(message.body);
-          console.log("Games list:", gamesList);
-        
-          if (Array.isArray(gamesList) && gamesList.length > 0) {
-            setGameState(gamesList[0]);
-          }
-        });
-        
-        
-        
-      };
-
-      client.onDisconnect = () => {
-        setConnected(false);
-        console.log("Disconnected from WebSocket");
-      };
-
-      client.activate();
+    client.onConnect = () => {
+      setConnected(true);
+      console.log("Connected to WebSocket");
       setStompClient(client);
-
-      return () => {
-        if (client) {
-          client.deactivate();
-        }
-      };
     };
 
-    if (!stompClient) {
-      connectWebSocket();
-    }
-    
+    client.onDisconnect = () => {
+      setConnected(false);
+      console.log("Disconnected from WebSocket");
+    };
+
+    client.activate();
+    setStompClient(client);
+
     return () => {
-      if (stompClient) {
-        stompClient.deactivate();
-      }
+      if (client) client.deactivate();
     };
-  }, [gameState?.gameId]);
+  };
+
+  if (!stompClient) {
+    connectWebSocket();
+  }
+
+  return () => {
+    if (stompClient) stompClient.deactivate();
+  };
+}, []); // Empty dependency array to run only once on mount
+
+const joinGame = useCallback(() => {
+  if (stompClient && connected && tg?.id) {
+    stompClient.publish({
+      destination: `/app/poker/join/${tg.id}`,
+      body: JSON.stringify({}),
+    });
+    const subscription = stompClient.subscribe(`/user/${tg.id}/gameAssigned`, (message) => {
+      const gameId = message.body;
+      console.log("Assigned to game:", gameId);
+      stompClient.subscribe(`/topic/games/${gameId}`, (msg) => {
+        handleGameUpdate(JSON.parse(msg.body));
+      });
+      subscription.unsubscribe();
+    });
+  }
+}, [stompClient, connected, tg, handleGameUpdate]);
+
+const createGame = useCallback((numPlayers, initialBet) => {
+  if (stompClient && connected && tg?.id) {
+    stompClient.publish({
+      destination: '/app/poker/create',
+      body: JSON.stringify({
+        telegramId: tg.id,
+        initialBet: initialBet,
+      }),
+    });
+    setInitialBet(initialBet);
+    setShowSettings(false);
+    const subscription = stompClient.subscribe(`/user/${tg.id}/gameAssigned`, (message) => {
+      const gameId = message.body;
+      console.log("Created game:", gameId);
+      stompClient.subscribe(`/topic/games/${gameId}`, (msg) => {
+        handleGameUpdate(JSON.parse(msg.body));
+      });
+      subscription.unsubscribe();
+    });
+  }
+}, [stompClient, connected, tg, handleGameUpdate]);
 
   
   
@@ -119,28 +136,26 @@ const PokerGame = () => {
     }
   };
 
-  const joinGame = useCallback(() => {
-    if (stompClient && connected && tg?.id) {
-      stompClient.publish({
-        destination: `/poker/join/${tg.id}`,
-        body: JSON.stringify({})
+  
+  useEffect(() => {
+    if (stompClient && connected) {
+      stompClient.subscribe('/topic/games', (message) => {
+        const gamesList = JSON.parse(message.body);
+        console.log("Available games:", gamesList);
+        if (Array.isArray(gamesList) && gamesList.length > 0) {
+          const waitingGame = gamesList.find(game => game.gameStage === "waiting");
+          if (waitingGame) {
+            setGameState(waitingGame);
+            stompClient.subscribe(`/topic/games/${waitingGame.gameId}`, (msg) => {
+              handleGameUpdate(JSON.parse(msg.body));
+            });
+          }
+        }
       });
     }
-  }, [stompClient, connected, tg]);
+  }, [stompClient, connected, handleGameUpdate]);
 
-  const createGame = useCallback((numPlayers, initialBet) => {
-    if (stompClient && connected && tg?.id) {
-      stompClient.publish({
-        destination: '/app/poker/create',
-        body: JSON.stringify({
-          telegramId: tg.id,
-          initialBet: initialBet
-        })
-      });
-      setInitialBet(initialBet);
-      setShowSettings(false);
-    }
-  }, [stompClient, connected, tg]);
+
   
 
   const playerAction = useCallback((action, amount = 0) => {
@@ -207,58 +222,83 @@ const PokerGame = () => {
 
 
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between mb-4 rounded-full px-6 py-2 bg-black bg-opacity-75 text-white">
-          <div className="w-2/5 rounded-full flex items-center gap-2">
-            Balance: {playerChips}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsSoundEnabled(!isSoundEnabled)}
-              className="bg-transparent hover:bg-gray-700"
-            >
-              {isSoundEnabled ? (
-                <Volume2 className="w-5 h-5" />
-              ) : (
-                <VolumeX className="w-5 h-5" />
-              )}
-            </button>
-            <button
-              onClick={leaveGame}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Leave Game
-            </button>
-          </div>
+return (
+  <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-800 p-4">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex justify-between mb-4 rounded-full px-6 py-2 bg-black bg-opacity-75 text-white">
+        <div className="w-2/5 rounded-full flex items-center gap-2">
+          Balance: {playerChips}
         </div>
-        
-        {gameState && (
-          <PokerTable
-            gameState={gameState}
-            playerTelegramId={tg?.id}
-            communityCards={communityCards}
-            playerHand={playerHand}
-            isPlayerTurn={isPlayerTurn}
-            onPlayerAction={playerAction}
-            currentBet={currentBet}
-            playerChips={playerChips}
-          />
-        )}
-        
-        {!gameState && (
-          <div className="text-center p-10 bg-black bg-opacity-50 text-white rounded-lg">
-            <h2 className="text-xl mb-4">Waiting for game...</h2>
-            <button onClick={joinGame} className="bg-green-600 hover:bg-green-700">
-              Join Available Game
-            </button>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsSoundEnabled(!isSoundEnabled)}
+            className="bg-transparent hover:bg-gray-700"
+          >
+            {isSoundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={leaveGame}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Leave Game
+          </button>
+        </div>
       </div>
-      <Footer />
-    </div>
-  );
-};
 
+      {gameState && gameState.gameStage === "waiting" && (
+        <div className="text-center p-10 bg-black bg-opacity-50 text-white rounded-lg">
+          <h2 className="text-xl mb-4">
+            Waiting for players... ({gameState.players.length}/{gameState.maxPlayers})
+          </h2>
+        </div>
+      )}
+
+      {gameState && gameState.gameStage !== "waiting" && (
+        <PokerTable
+          gameState={gameState}
+          playerTelegramId={tg?.id}
+          communityCards={communityCards}
+          playerHand={playerHand}
+          isPlayerTurn={isPlayerTurn}
+          onPlayerAction={playerAction}
+          currentBet={currentBet}
+          playerChips={playerChips}
+        />
+      )}
+
+      {!gameState && (
+        <div className="text-center p-10 bg-black bg-opacity-50 text-white rounded-lg">
+          <h2 className="text-xl mb-4">No game joined yet</h2>
+          <button onClick={joinGame} className="bg-green-600 hover:bg-green-700 mr-2">
+            Join Available Game
+          </button>
+          <button onClick={() => setShowSettings(true)} className="bg-blue-600 hover:bg-blue-700">
+            Create New Game
+          </button>
+        </div>
+      )}
+
+      {showSettings && !gameState && (
+        <div className="text-center p-10 bg-black bg-opacity-50 text-white rounded-lg">
+          <h2 className="text-xl mb-4">Create a Game</h2>
+          <input
+            type="number"
+            value={initialBet}
+            onChange={(e) => setInitialBet(Math.max(1, parseInt(e.target.value) || 10))}
+            className="mb-4 p-2 rounded text-black"
+            placeholder="Initial Bet"
+          />
+          <button
+            onClick={() => startGame(2, initialBet)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Start Game
+          </button>
+        </div>
+      )}
+    </div>
+    <Footer />
+  </div>
+);
+}
 export default PokerGame;
