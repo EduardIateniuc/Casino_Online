@@ -6,13 +6,14 @@ import ReactDOM from "react-dom/client";
 import HistoryPage from './ui/components/HistoryPage.jsx';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Incomes from "./ui/components/BalanceIncomes.jsx";
+import VoiceInput from './ui/components/VoiceInput.jsx';
 
 
 export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Profile />}/>
+        <Route path="/" element={<VoiceInput />}/>
         <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />
         <Route path='/balance-income' element={< Incomes/>}></Route>
