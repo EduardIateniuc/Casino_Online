@@ -10,12 +10,15 @@ import Rating from './ui/components/Rating.jsx';
 import MainPage from './ui/components/MainPage.jsx';
 import PokerWebSocket from './ui/components/PokerWebSocket.jsx';
 import PokerGame from './ui/components/test/PokerGame.jsx';
+import VoiceInput from './ui/components/VoiceInput.jsx';
 
 export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={< MainPage/>}/>
+        <Route path='/voice' element={<VoiceInput/>}/>
+        <Route path="/chatting" element={<PokerWebSocket/>}/>
         <Route path='/test' element={ <PokerGame/>}/>
         <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />

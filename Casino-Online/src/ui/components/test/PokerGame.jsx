@@ -29,8 +29,30 @@ const PokerGame = () => {
   const [initialBet, setInitialBet] = useState(10);
 
   const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const handleGameUpdate = (updatedGameState) => {
+    setGameState(updatedGameState);
+    
+    setCommunityCards(updatedGameState.communityCards);
+    setPot(updatedGameState.pot);
+    setCurrentBet(updatedGameState.currentBet);
+    setGameStage(updatedGameState.gameStage);
+    
+    if (tg?.id) {
+      const player = updatedGameState.players.find(p => p.telegramId === tg.id);
+      if (player) {
+        setPlayerHand(player.hand);
+        setPlayerChips(player.chips);
+        setIsPlayerTurn(player.isTurn);
+      }
+    }
+    
+    if (updatedGameState.gameStage === "showdown") {
+      playSound("win");
+    } else if (updatedGameState.gameStage !== gameStage) {
+      playSound("deal");
+    }
+  };
 
-  // In PokerGame.js
 useEffect(() => {
   const connectWebSocket = () => {
     const socket = new SockJS('/ws');
@@ -41,24 +63,20 @@ useEffect(() => {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
-
+  
     client.onConnect = () => {
       setConnected(true);
       console.log("Connected to WebSocket");
       setStompClient(client);
     };
-
+  
     client.onDisconnect = () => {
       setConnected(false);
       console.log("Disconnected from WebSocket");
     };
-
+  
     client.activate();
     setStompClient(client);
-
-    return () => {
-      if (client) client.deactivate();
-    };
   };
 
   if (!stompClient) {
@@ -112,30 +130,7 @@ const createGame = useCallback((numPlayers, initialBet) => {
   
   
 
-  const handleGameUpdate = (updatedGameState) => {
-    setGameState(updatedGameState);
-    
-    setCommunityCards(updatedGameState.communityCards);
-    setPot(updatedGameState.pot);
-    setCurrentBet(updatedGameState.currentBet);
-    setGameStage(updatedGameState.gameStage);
-    
-    if (tg?.id) {
-      const player = updatedGameState.players.find(p => p.telegramId === tg.id);
-      if (player) {
-        setPlayerHand(player.hand);
-        setPlayerChips(player.chips);
-        setIsPlayerTurn(player.isTurn);
-      }
-    }
-    
-    if (updatedGameState.gameStage === "showdown") {
-      playSound("win");
-    } else if (updatedGameState.gameStage !== gameStage) {
-      playSound("deal");
-    }
-  };
-
+ 
   
   useEffect(() => {
     if (stompClient && connected) {

@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import axios from "axios";
 
 export const usePokerWebSocket = (newRoomName, inputMessage) => {
   const [roomId, setRoomId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [rooms, setRooms] = useState([]);
-  const [stompClient, setStompClient] = useState(null);
-  
-  const API_BASE_URL = "http://192.168.100.76:8080";
-  const WS_URL = "ws://192.168.100.76:8080/ws";
+  const stompClientRef = useRef(null); // <-- исправлено
+
+  const API_BASE_URL = "http://172.20.10.6:8080";
+  const WS_URL = "http://172.20.10.6:8080/ws"; // <-- http, не ws
 
   useEffect(() => {
     fetchRooms();
@@ -17,11 +18,13 @@ export const usePokerWebSocket = (newRoomName, inputMessage) => {
 
   useEffect(() => {
     if (!roomId) return;
-    
+
     setMessages([]);
-    
+
+    const socket = new SockJS(WS_URL);
+
     const client = new Client({
-      brokerURL: WS_URL,
+      webSocketFactory: () => socket,
       debug: (str) => console.log(str),
       onConnect: () => {
         console.log(`Connected to room: ${roomId}`);
@@ -41,8 +44,8 @@ export const usePokerWebSocket = (newRoomName, inputMessage) => {
     });
 
     client.activate();
-    setStompClient(client);
-    
+    stompClientRef.current = client;
+
     return () => {
       if (client.connected) {
         client.deactivate();
@@ -60,26 +63,31 @@ export const usePokerWebSocket = (newRoomName, inputMessage) => {
   };
 
   const sendMessage = (content) => {
-    if (stompClient && stompClient.connected && content.trim()) {
-      const message = { 
-        sender: "User", 
-        content: content, 
+    const client = stompClientRef.current;
+
+    if (client && client.connected && content.trim()) {
+      const message = {
+        sender: "User",
+        content: content,
         roomId: roomId,
         timestamp: new Date().toISOString()
       };
-      
-      stompClient.publish({
-        destination: `/app/room/${roomId}`,
+
+      client.publish({
+        destination: "/app/room", // <--- фиксированный путь
         body: JSON.stringify(message),
       });
+      
+    } else {
+      console.warn("Client not connected or empty message.");
     }
   };
 
   const createRoom = async () => {
     if (newRoomName.trim()) {
       try {
-        const response = await axios.post(`${API_BASE_URL}/rooms/create`, { 
-          name: newRoomName 
+        const response = await axios.post(`${API_BASE_URL}/rooms/create`, {
+          name: newRoomName,
         });
         setRooms([...rooms, response.data]);
         return response.data;
@@ -95,6 +103,6 @@ export const usePokerWebSocket = (newRoomName, inputMessage) => {
     messages,
     setRoomId,
     sendMessage,
-    createRoom
+    createRoom,
   };
 };
