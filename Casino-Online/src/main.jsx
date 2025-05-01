@@ -7,13 +7,14 @@ import HistoryPage from './ui/components/HistoryPage.jsx';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Incomes from "./ui/components/BalanceIncomes.jsx";
 import VoiceInput from './ui/components/VoiceInput.jsx';
+import FuckingAwesome from './ui/components/FuckingAwesome.jsx';
 
 
 export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<VoiceInput />}/>
+        <Route path="/" element={<FuckingAwesome />}/>
         <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />
         <Route path='/balance-income' element={< Incomes/>}></Route>
