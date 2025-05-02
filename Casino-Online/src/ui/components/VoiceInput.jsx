@@ -287,7 +287,7 @@ const VoiceInput = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-indigo-700">Голосовой Помощник Денис - Хуй тоби у нис</h1>
+        <h1 className="text-3xl font-bold text-indigo-700">Голосовой Помощник</h1>
         <p className="text-gray-600 mt-2">Общайтесь с вашим ИИ-ассистентом</p>
       </div>
       
