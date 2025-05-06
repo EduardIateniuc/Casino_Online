@@ -13,7 +13,7 @@ export default function Main() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<VoiceInput />}/>
+        <Route path="/" element={<Profile />}/>
         <Route path='/game' element={<App/>}/>
         <Route path='/history' element={<HistoryPage/>} />
         <Route path='/balance-income' element={< Incomes/>}></Route>
